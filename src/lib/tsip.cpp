@@ -27,11 +27,42 @@
 
 #include "tsip.h"
 
-tsip::tsip() {
+/** Constructor.
+*
+*	The class is created with the port definition and the port is opened.
+*	The verbose flag defaults to true and the debug flag defaults to
+*	false.  The gps file is opened on the specified port.
+*
+* 	@param string   port name  "/dev/ttyS0"
+* 	@param bool     verbose - optional
+* 
+*/
+tsip::tsip(std::string port="/dev/ttyS0", bool verbose) {
+	// set verbose
+	set_verbose(true);
+	set_debug(false);
+
+	//conversion factor to compute radians to degrees
+	_rad = 180/M_PI;
+	//init report fields
 	init_rpt();
-	verbose = true;
-	debug = false;
+
+	// set the port
+	set_gps_port(port);
+	
+    file = fopen(gps_port.c_str(), "r");
+//        FILE *file = fopen(gps_port.c_str(), "r");
+
+    if(!file)
+    {
+		//if open fails - terminate run
+        printf("Cannot open %s\n", gps_port.c_str());
+        exit;
+    }
+
+    setup_serial_port(file);
 }
+
 
 /** initilize command/report fields
 *
@@ -86,6 +117,83 @@ void tsip::set_verbose(bool vb) {
 void tsip::set_debug(bool db) {
 	debug = db;
 }
+
+/** set gps port
+*
+*   Set the variable gps_port with the port id.
+*
+*   @param string::gps_port  defaults to /dev/ttyS0.
+*/
+void tsip::set_gps_port(std::string port="/dev/ttyS0") {
+	gps_port = port;
+}
+
+/** get gps port
+*
+*   Get the gps_port setting.
+*
+*   @return string::gps_port  
+*/
+std::string tsip::get_gps_port() {
+	return (gps_port);
+}
+
+
+/** set up serial port
+*
+*   Set the  parameters for the I/O comm port the gps is attached.
+*
+*   @oaram pointer to the serial port 'file'.
+*/
+void tsip::setup_serial_port(FILE *file)
+{
+    int fd;
+    struct termios newtio;
+
+    fd = fileno(file);
+
+    memset(&newtio, 0, sizeof(newtio)); /* clear struct for new port settings */
+
+    /* 
+        B9600: Set bps rate. You could also use cfsetispeed and cfsetospeed.
+        CS8     : 8n1 (8bit,no parity,1 stopbit)
+        CLOCAL  : local connection, no modem contol
+        CREAD   : enable receiving characters
+     */
+    newtio.c_cflag = B9600 | CS8 | CLOCAL | CREAD;
+
+    /*
+        IGNPAR  : ignore bytes with parity errors
+        otherwise make device raw (no other input processing)
+     */
+    newtio.c_iflag = IGNPAR;
+
+    /*
+        Raw output.
+     */
+    newtio.c_oflag = 0;
+
+    /* 
+        initialize all control characters 
+        default values can be found in /usr/include/termios.h, and are given
+        in the comments, but we don't need them here
+     */
+    newtio.c_cc[VTIME]    = 0;     /* inter-character timer unused */
+    newtio.c_cc[VMIN]     = 1;     /* blocking read until 1 character arrives */
+
+    /*
+        ICANON  : enable canonical input
+        disable all echo functionality, and don't send signals to calling program
+     */
+    newtio.c_lflag = 0;//ICANON;
+
+    /* 
+        now clean the modem line and activate the settings for the port
+     */
+    tcflush(fd, TCIFLUSH);
+    tcsetattr(fd,TCSANOW,&newtio);
+}
+
 
 /** convert 2 bytes to short int
 *
@@ -206,7 +314,103 @@ DOUBLE tsip::b8_to_double(int bb, char r_code) {
 
 	return dbl.value;
 
-}       
+}
+
+
+/**  is report found
+*
+*   pass the command code and check to see if report has been found.
+* 	if no report is returned in response to a command, then true is
+* 	returned, if the command is in the list.
+*
+* 	@param cmd_stack_t command codereference to time fields
+*   @return bool.
+*/
+bool tsip::is_report_found(_command_packet &_cmd) {
+	bool isfound = false;
+
+	switch (_cmd.report.code){
+		
+		// 0x1e
+		case COMMAND_COLD_FACTORY_RESET :
+			//0x45 report_sw_version
+			if (m_updated.report.sw_version) {
+				isfound = true;
+			}
+			break;
+			
+		// 0x1f
+		case COMMAND_REQUEST_SW_VERSION :
+			//0x45 report_sw_version
+			if (m_updated.report.sw_version) {
+				isfound = true;
+			}
+			break;
+			
+		// 0x25 
+		case COMMAND_WARM_RESET_SELF_TEST :
+			//0x45 report_sw_version
+			if (m_updated.report.sw_version) {
+				isfound = true;
+			}
+			break;
+			
+		// 0x35
+		case COMMAND_SET_IO_OPTIONS :
+			// 0x55	 REPORT_IO_OPTIONS
+			if (m_updated.report.io_options) {
+				isfound = true;
+			}
+			break;
+			
+		// 0x37
+		case COMMAND_REQUEST_POSITION :
+			// 0x42 REPORT_ECEF_POSITION_S
+			if (m_updated.report.ecef_position_s && m_updated.report.ecef_position_d) {
+				isfound = true;
+			}
+			// 0x43 REPORT_ECEF_VELOCITY
+			
+			// 0x83 REPORT_ECEF_POSITION_D
+			//if (m_updated.report.ecef_position_d) {
+			//	isfound = true;
+			//}
+			break;	
+		//0x8E
+		case COMMAND_SUPER_PACKET:
+			switch (_cmd.extended.subcode) {
+				// 0xa2
+				case REPORT_SUPER_UTC_GPS_TIME :
+					if (m_updated.report.utc_gps_time) {
+						isfound = true;
+					}
+					break;
+				// 0xab
+				case REPORT_SUPER_PRIMARY_TIME :
+					if (m_updated.report.primary_time) {
+						isfound = true;
+					}
+					break;
+				// 0xac
+				case REPORT_SUPER_SECONDARY_TIME :
+					if (m_updated.report.secondary_time) {
+						isfound = true;
+					}	
+					break;
+			}
+			break;
+		default :
+			isfound = false;
+		}
+	return isfound;
+}
+	// other reports
+	// 0x42 REPORT_ECEF_POSITION_S:
+	// 0x43 REPORT_ECEF_VELOCITY
+	// 0x4a	REPORT_SINGLE_POSITION
+	// 0x56 REPORT_ENU_VELOCITY				
+	// 0x83 REPORT_ECEF_POSITION_D			
+	// 0x84 REPORT_DOUBLE_POSITION
 
 /** encode byte stream into TSIP packets
 *
@@ -464,28 +668,170 @@ int tsip::update_report()
 		}
 		
 
-		//printf("\nsrc time rl: %i-%i, sec: %i %i:%i:%i %s\n",rlen,m_report_length,m_primary_time.report.seconds,m_report.extended.data[11],m_report.extended.data[10],m_report.extended.data[9],src);
-		//memcpy(dst, src, std::min(m_report_length, rlen));
-		//printf("tsip::update_report sec: %i  %i:%i:%i  %i/%i/%i\n",m_primary_time.report.seconds,m_primary_time.report.hours,m_primary_time.report.minutes,m_primary_time.report.seconds,m_primary_time.report.year,m_primary_time.report.month,m_primary_time.report.day);
-
-		//printf("\nsrc time rl: %i-%i, %i/%i/%i %i:%i:%i %s\n",rlen,m_report_length,m_report.extended.data[14],m_report.extended.data[13],m_report.extended.data[12],m_report.extended.data[11],m_report.extended.data[10],m_report.extended.data[9],src);
-		
-		//memcpy(dst, src, std::min(m_report_length, rlen));
-
-
-		//printf("tsip::update_report (p_time) sec: %i   %i/%i/%i %i:%i:%i \n",m_primary_time.report.seconds,m_primary_time.report.year,m_primary_time.report.month,m_primary_time.report.day,m_primary_time.report.hours,m_primary_time.report.minutes,m_primary_time.report.seconds);
-		//printf("tsip::update_report (p_time) sec: %i %i/%i/%i %i:%i:%i  \n",m_primary_time.rpt.report.seconds,m_primary_time.rpt.report.year,m_primary_time.rpt.report.month,m_primary_time.rpt.report.day,m_primary_time.rpt.report.hours,m_primary_time.rpt.report.minutes,m_primary_time.rpt.report.seconds);
-
-		//printf("after move p_t.data: \n");
-		//for (int k=0;k<=m_report_length;k++){printf(" %x",m_primary_time.rpt.data[k]);}
-		//printf("\n");
-		//for (int k=0;k<=m_report_length;k++){printf(" %i",m_primary_time.rpt.data[k]);}
-		//printf("\n");
-		//printf("pointer %p \n", src);
-		//printf("data    %p \n", (void *)src);
 		return 1;
 	}
 
 
 	return 0;
+}
+
+/** get_request_msg
+*
+*   send a sequence of commands to the gps. 
+*
+*   @return bool  
+*/
+bool tsip::send_request_msg(_command_packet _cmd) {
+	
+	unsigned char buffer[256];
+	buffer[0] = DLE;
+	int x = 1;
+	for (int j=0; j < _cmd.raw.cmd_len; j++,x++){
+		buffer[x] = _cmd.raw.data[j];
+	}
+	buffer[x] = DLE;
+	buffer[x+1] = ETX;
+	int byte_cnt = fwrite(buffer, 1, x+1, file);
+	if (verbose) {
+		printf("Sending Request: ");
+		for (int k=0;k<=x+1;k++){printf(" %x",buffer[k]);}
+		printf("\n");
+	}
+
+	return (byte_cnt == x+1 ? true : false);
+}
+
+/** get_report_msg
+*
+*   send a sequence of commands to the gps.  The loop is continued until
+*   the correct message id is returned.  
+*
+*   @return bool  
+*/
+bool tsip::get_report_msg(_command_packet _cmd) {
+	//clear report flags
+	init_rpt();
+	
+	// init local var
+    unsigned char ch = 0;
+    
+    
+RETRY:
+	// send the commmand
+    send_request_msg(m_command);
+	
+	// read stream and pass to encode routine untile packet complete 
+	int loop_cnt=0;
+	while (!is_report_found(_cmd)) {
+		int rc = 0;
+		while (rc == 0) {	
+			rc = encode(getc(file));
+		}
+		loop_cnt++;
+		if (loop_cnt >20) break;
+	}
+	
+	//set flag
+	bool rpt_fnd = is_report_found(_cmd);
+
+	if (_cmd.report.code == COMMAND_SUPER_PACKET) {
+
+		if (rpt_fnd) {
+			printf("Packet %x %x found \n",m_report.report.code,m_report.extended.subcode);
+				
+		}else {
+			//printf("Packet %x %x not found - returned %x-%x\n",rpt_code,rpt_subcode,m_report.report.code,m_report.extended.subcode);
+			printf("Packet for  %x %x not found \n",m_report.report.code,m_report.extended.subcode);
+			//goto RETRY;
+		}
+	} else {
+		//if (m_report.report.code == rpt_code ) {
+		if (is_report_found(_cmd)) {
+			printf("Packet %x  found \n",m_report.report.code);
+		} else {
+			//printf("Packet %x not found - returned %x\n",rpt_code,m_report.report.code);
+			printf("Packet for %x not found \n",m_report.report.code);
+			//goto RETRY;
+		}
+	}
+    
+	
+	return true;
+}
+
+/** get gps time in utc seconds
+*
+*   updates the time_t referenced structure passed to method.
+*
+
+*   @return time_t 
+*/
+time_t tsip::get_gps_time_utc() {
+	bool rc;
+	
+	//build a2 request - set UTC
+	m_command.extended.code = COMMAND_SUPER_PACKET;
+	m_command.extended.subcode = REPORT_SUPER_UTC_GPS_TIME;
+	m_command.extended.data[0] = 0x3;
+	m_command.extended.cmd_len = 3;
+	
+	rc = send_request_msg(m_command);
+	if (!rc) {
+		printf("****Failed to get GPS time****\n");
+		exit false;
+    }
+
+	//build ab request - request time packet
+	m_command.extended.code = COMMAND_SUPER_PACKET;
+	m_command.extended.subcode = REPORT_SUPER_PRIMARY_TIME;
+	m_command.extended.cmd_len  = 2;
+	rc = get_report_msg(m_command);
+
+	struct tm time;
+
+    time.tm_zone = "UTC";
+    time.tm_wday = -1;
+    time.tm_yday = -1;
+    time.tm_isdst = -1;
+    time.tm_year = m_primary_time.report.year - 1900;
+    time.tm_mon = m_primary_time.report.month - 1;
+    time.tm_mday = m_primary_time.report.day;
+    time.tm_hour = m_primary_time.report.hours;
+    time.tm_min = m_primary_time.report.minutes;
+    time.tm_sec = m_primary_time.report.seconds;
+
+    gps_time = timegm(&time);
+    if (verbose) {
+		printf("Got GPS time Year: %d, Month: %d, Day: %d, Hour: %d, Minutes: %d, Seconds: %d\n", time.tm_year, time.tm_mon, time.tm_mday, time.tm_hour, time.tm_min, time.tm_sec);
+		printf("seconds: %d\n", gps_time);
+    }
+
+	return gps_time;
+}
+
+/** get xyz from gps
+*
+*   Get the xyz (lat, long, alt) from the gps.
+*
+*   @return xyz_t lat, long, alt  
+*/
+tsip::xyz_t tsip::get_xyz() {
+	printf("XYZ rtn\n");
+	bool rc;
+	//build ab request - request time packet
+	m_command.extended.code = COMMAND_SUPER_PACKET;
+	m_command.extended.subcode = REPORT_SUPER_SECONDARY_TIME;
+	m_command.extended.cmd_len  = 2;
+	rc = get_report_msg(m_command);
+
+	if (rc) {
+		xyz.x= m_secondary_time.report.latitude * _rad;
+		xyz.y= m_secondary_time.report.longitude * _rad;
+		xyz.z= m_secondary_time.report.altitude;
+	} else {
+		xyz.x=0;
+		xyz.y=0;
+		xyz.z=0;
+	}
+	return xyz;
 }

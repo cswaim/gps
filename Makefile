@@ -50,7 +50,7 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__dirstamp = $(am__leading_dot)dirstamp
 am_gps_main_OBJECTS = src/lib/gps_main.$(OBJEXT) \
-	src/lib/tsip.$(OBJEXT) src/lib/gps_api.$(OBJEXT)
+	src/lib/tsip.$(OBJEXT)
 gps_main_OBJECTS = $(am_gps_main_OBJECTS)
 gps_main_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I.
@@ -171,8 +171,7 @@ top_srcdir = .
 AUTOMAKE_OPTIONS = subdir-objects
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS}
 gps_main_SOURCES = src/lib/gps_main.cpp \
-        src/lib/tsip.h src/lib/tsip.cpp \
-        src/lib/gps_api.h src/lib/gps_api.cpp 
+        src/lib/tsip.h src/lib/tsip.cpp 
 
 all: all-am
 
@@ -259,22 +258,18 @@ src/lib/gps_main.$(OBJEXT): src/lib/$(am__dirstamp) \
 	src/lib/$(DEPDIR)/$(am__dirstamp)
 src/lib/tsip.$(OBJEXT): src/lib/$(am__dirstamp) \
 	src/lib/$(DEPDIR)/$(am__dirstamp)
-src/lib/gps_api.$(OBJEXT): src/lib/$(am__dirstamp) \
-	src/lib/$(DEPDIR)/$(am__dirstamp)
 gps_main$(EXEEXT): $(gps_main_OBJECTS) $(gps_main_DEPENDENCIES) 
 	@rm -f gps_main$(EXEEXT)
 	$(CXXLINK) $(gps_main_OBJECTS) $(gps_main_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
-	-rm -f src/lib/gps_api.$(OBJEXT)
 	-rm -f src/lib/gps_main.$(OBJEXT)
 	-rm -f src/lib/tsip.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
-include src/lib/$(DEPDIR)/gps_api.Po
 include src/lib/$(DEPDIR)/gps_main.Po
 include src/lib/$(DEPDIR)/tsip.Po
 
@@ -616,6 +611,7 @@ uninstall-am: uninstall-binPROGRAMS
 	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
 	tags uninstall uninstall-am uninstall-binPROGRAMS
 
+#        src/lib/gps_api.h src/lib/gps_api.cpp 
 
 #dist_noinst_SCRIPTS = autogen.sh
 

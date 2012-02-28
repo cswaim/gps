@@ -32,11 +32,16 @@
 
 #ifndef _tsip_h
 #define _tsip_h
+#define _USE_MATH_DEFINES
 
 #include <algorithm>
 #include <cstring>
+#include <string>
 #include <cstdio>
 #include <vector>
+#include <cmath>
+#include <termios.h>
+#include <ctime>
 
 #define BIT0  0x0001
 #define BIT1  0x0002
@@ -106,6 +111,28 @@ const UINT8 COMMAND_REQUEST_POSITION		= 0x37;
 const UINT8 COMMAND_SUPER_PACKET			= 0x8E;
 
 /****************************
+ * Request packet structures *
+ ****************************/
+// generic command TSIP packet
+union _command_packet {
+	struct _raw {
+		UINT8 data[MAX_COMMAND];
+		UINT8 cmd_len;
+	} raw;
+	struct _report {
+		UINT8 code;
+		UINT8 data[MAX_COMMAND-1];
+		UINT8 cmd_len;
+	} report;
+	struct _extended {
+		UINT8 code;
+		UINT8 subcode;
+		UINT8 data[MAX_COMMAND-2];
+		UINT8 cmd_len;
+	} extended;
+};
+
+/****************************
  * Report packet structures *
  ****************************/
 
@@ -122,22 +149,6 @@ union _report_packet {
 		UINT8  code;
 		UINT8  subcode;
 		UINT8  data[MAX_DATA-2];
-	} extended;
-};
-
-// generic command TSIP packet
-union _command_packet {
-	struct _raw {
-		UINT8 data[MAX_COMMAND];
-	} raw;
-	struct _report {
-		UINT8  code;
-		UINT8  data[MAX_COMMAND-1];
-	} report;
-	struct _extended {
-		UINT8  code;
-		UINT8  subcode;
-		UINT8  data[MAX_COMMAND-2];
 	} extended;
 };
 
@@ -406,15 +417,18 @@ struct _unknown {
 
 
 // Trimble Standard Interface Protocol (TSIP) class
-class tsip
-{
+class tsip {
 	public:
-		tsip(void);
-		//~Tsip();
-		int encode(UINT8 c);			// encode byte stream into packets
-		void init_rpt(void); 			// initialize the report fields
-		void set_verbose(bool);         // set verbose
-		void set_debug(bool);        	// set debug 
+		struct xyz_t {
+			double x;			//decimal degrees
+			double y;			//decimal degrees
+			double z;			//meters
+		};
+
+		//return parms
+		time_t gps_time;
+		xyz_t xyz;
+		double _rad;            // (180/pi) to convert radians to degree
 
 		// received reports
 		struct _ecef_position_s		m_ecef_position_s;
@@ -458,15 +472,30 @@ class tsip
 		union _report_packet  m_report;
 		int   m_report_length;
 
-	private:
-		int update_report(void);		// update report with packet data
-		UINT16 b2_to_uint16(int bb, char r_code);		// convert 2 bytes to short integer
-		UINT32 b4_to_uint32(int bb, char r_code);		// convert 4 bytes to integer
-		SINGLE b4_to_single(int bb, char r_code);	// convert 4 bytes to float
-		DOUBLE b8_to_double(int bb, char r_code);	// convert 8 bytes to double
+		//public methods
+		tsip(std::string port, bool verbose=true);
+		int encode(UINT8 c);			// encode byte stream into packets
+		void init_rpt(void); 			// initialize the report fields
+		void set_verbose(bool);         // set verbose
+		void set_debug(bool);        	// set debug
+		void set_gps_port(std::string gps_port);
+		std::string get_gps_port();
+		bool send_request_msg(_command_packet _cmd); 
+		bool get_report_msg(_command_packet _cmd);
 
+		//gps_api(std::string port, bool verbose=true); 
+		//bool get_gps_time_utc(time_t &seconds_since_epoch);
+		time_t get_gps_time_utc();
+		xyz_t get_xyz();
+		bool send_get_time();
+		
+		
+	private:
 		bool verbose;
 		bool debug;
+		
+		std::string gps_port;
+		FILE *file;
 
 		// packet decoder states
 		enum t_state {
@@ -475,6 +504,15 @@ class tsip
 			DATA,
 			DATA_DLE
 		} m_state;
+		
+		//methods
+		void setup_serial_port(FILE *file);
+		int update_report(void);		// update report with packet data
+		bool is_report_found(_command_packet &_cmd);
+		UINT16 b2_to_uint16(int bb, char r_code);	// convert 2 bytes to short integer
+		UINT32 b4_to_uint32(int bb, char r_code);	// convert 4 bytes to integer
+		SINGLE b4_to_single(int bb, char r_code);	// convert 4 bytes to float
+		DOUBLE b8_to_double(int bb, char r_code);	// convert 8 bytes to double
 };
 
 
