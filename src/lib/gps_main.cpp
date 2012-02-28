@@ -11,11 +11,12 @@ int main()
 	//std::string port = "/dev/ttyUSB0";
     int year, month, day, hour, minute, second;
 
-	//orig get time
-	printf("-----------getting gps time .h----\n");
-	time_t seconds_since_epoch;
-	get_gps_time_utc(port,seconds_since_epoch);
-	printf("Orig seconds: %d\n", seconds_since_epoch);
+	
+	//printf("----quiet---getting time--TSIP-------\n");	
+   // gps.set_verbose(false);
+   // gps_time = gps.get_gps_time_utc();
+    //gps.set_verbose(true);
+    
 	//tsip get time
     printf("---------getting time--TSIP-------\n");	
     gps_time = gps.get_gps_time_utc();
@@ -24,6 +25,12 @@ int main()
         printf("seconds: %d\n", gps_time);
     }
     print_report();
+    
+    //orig get time
+	printf("-----------getting gps time .h----\n");
+	//time_t seconds_since_epoch;
+	//get_gps_time_utc(port,seconds_since_epoch);
+	//printf("Orig seconds: %d\n", seconds_since_epoch);
 
 	//get zyz
 	printf("---------getting xyz---------\n");
@@ -67,8 +74,8 @@ void print_report() {
 		printf("          pps offset: %f\n",gps.m_secondary_time.report.pps_offset);
 		printf("              10 MHz: %f\n",gps.m_secondary_time.report.tenMHz_offset);
 		printf("           DAC Value: %x\n",gps.m_secondary_time.report.dac_value);
-		printf("         dac Voltage: %f\n",gps.m_secondary_time.report.dac_voltage);
-		printf("         Temperature: %f\n",gps.m_secondary_time.report.temperature);
+		printf("         dac Voltage: %f %x\n",gps.m_secondary_time.report.dac_voltage,gps.m_secondary_time.report.dac_voltage);
+		printf("         Temperature: %f %x\n",gps.m_secondary_time.report.temperature,gps.m_secondary_time.report.temperature);
 		printf("            Latitude: %f\n",gps.m_secondary_time.report.latitude);
 		printf("           Longitude: %f\n",gps.m_secondary_time.report.longitude);
 		printf("            Altitude: %f\n",gps.m_secondary_time.report.altitude);

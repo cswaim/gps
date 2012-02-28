@@ -259,23 +259,23 @@ UINT32 tsip::b4_to_uint32(int bb, char r_code) {
 *	@return  singel
 */
 SINGLE tsip::b4_to_single(int bb, char r_code) {
-	union _dbl_t {
+	union _sgl_t {
 		UINT8 data[sizeof(SINGLE)];
-		char cdata[sizeof(SINGLE)];
+		char cdata[sizeof(SINGLE)]; 
 		SINGLE value;
 	} sgl;
 
 	//must reverse order of bytes for endian compatability
 	if (r_code == 'r') {
-		for (int i=0, j=sizeof(SINGLE); i<sizeof(SINGLE); i++, j--) {
+		for (int i=0, j=sizeof(SINGLE)-1; i<sizeof(SINGLE); i++, j--) {
 			sgl.cdata[j] = m_report.report.data[bb+i];
 		}
 	} else if (r_code == 'e') {
-		for (int i=0, j=sizeof(SINGLE); i<sizeof(SINGLE); i++, j--) {
+		for (int i=0, j=sizeof(SINGLE)-1; i<sizeof(SINGLE); i++, j--) {
 			sgl.cdata[j] = m_report.extended.data[bb+i];
 		}
 	}
-
+	
 	return sgl.value;
 	
 	
@@ -613,19 +613,14 @@ int tsip::update_report()
 			m_secondary_time.report.spare_status1 = m_report.extended.data[13];
 			m_secondary_time.report.spare_status2 = m_report.extended.data[14];
 			
-			m_secondary_time.report.pps_offset = b4_to_single(15,'e');;
-
+			m_secondary_time.report.pps_offset = b4_to_single(15,'e');
 			m_secondary_time.report.tenMHz_offset = b4_to_single(19,'e');
-
 			m_secondary_time.report.dac_value = b4_to_uint32(23,'e');
-
 			m_secondary_time.report.dac_voltage = b4_to_single(27,'e');
-
 			m_secondary_time.report.temperature = b4_to_single(31,'e');
-			m_secondary_time.report.latitude = b8_to_double(35,'e');
 			
+			m_secondary_time.report.latitude = b8_to_double(35,'e');
 			m_secondary_time.report.longitude = b8_to_double(43,'e');
-
 			m_secondary_time.report.altitude = b8_to_double(51,'e');
 		
 			m_secondary_time.report.spare[0] = m_report.extended.data[59];
@@ -734,29 +729,17 @@ RETRY:
 	//set flag
 	bool rpt_fnd = is_report_found(_cmd);
 
-	if (_cmd.report.code == COMMAND_SUPER_PACKET) {
-
-		if (rpt_fnd) {
-			printf("Packet %x %x found \n",m_report.report.code,m_report.extended.subcode);
-				
-		}else {
-			//printf("Packet %x %x not found - returned %x-%x\n",rpt_code,rpt_subcode,m_report.report.code,m_report.extended.subcode);
-			printf("Packet for  %x %x not found \n",m_report.report.code,m_report.extended.subcode);
-			//goto RETRY;
-		}
-	} else {
-		//if (m_report.report.code == rpt_code ) {
-		if (is_report_found(_cmd)) {
-			printf("Packet %x  found \n",m_report.report.code);
-		} else {
-			//printf("Packet %x not found - returned %x\n",rpt_code,m_report.report.code);
-			printf("Packet for %x not found \n",m_report.report.code);
-			//goto RETRY;
-		}
-	}
-    
 	
-	return true;
+	if(verbose){
+		if (rpt_fnd) {
+				printf("Packet %x %x found \n",m_report.report.code,m_report.extended.subcode);
+			}else {
+				printf("Packet for  %x %x not found \n",m_report.report.code,m_report.extended.subcode);
+		}
+		printf("\n");
+	}
+	
+	return (rpt_fnd);
 }
 
 /** get gps time in utc seconds
@@ -776,16 +759,17 @@ time_t tsip::get_gps_time_utc() {
 	m_command.extended.cmd_len = 3;
 	
 	rc = send_request_msg(m_command);
-	if (!rc) {
-		printf("****Failed to get GPS time****\n");
-		exit false;
-    }
-
+	
 	//build ab request - request time packet
 	m_command.extended.code = COMMAND_SUPER_PACKET;
 	m_command.extended.subcode = REPORT_SUPER_PRIMARY_TIME;
 	m_command.extended.cmd_len  = 2;
 	rc = get_report_msg(m_command);
+	if (!rc) {
+		printf("****Failed to get GPS time****\n");
+		exit (false);
+    }
+
 
 	struct tm time;
 
