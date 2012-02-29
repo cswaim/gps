@@ -1,29 +1,58 @@
-/*
-  tsip.cpp - class implementation for the simplified Trimble Standard
-             Interface Protocol (TSIP) library for the Arduino platform.
+/**
+ *	@file tsip.cpp
+ * 	@brief class implementation for the simplified Trimble Standard Interface Protocol (TSIP) library 
+ *	@author 	(original) Brett Howard, Andrew Stern
+ *	@author 	Criss Swaim
+ * 	author uri 	http://www.tpginc.net/
+ * 	@version	v1.0	
+ * 	@date		2012-02
+         
+ *  @copyright 	Copyright (c) 2011 N7MG Brett Howard
+ *  @copyright	Copyright (c) 2011 Andrew Stern (N7UL)
+ * 
+ *  This library is free software; you can redistribute it and/or
+  *  modify it under the terms of the GNU Lesser General Public
+  * License as published by the Free Software Foundation; either
+  * version 2.1 of the License, or (at your option) any later version.
+  * 
+  * This library is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  * Lesser General Public License for more details.
+  * 
+  * You should have received a copy of the GNU Lesser General Public
+  * License along with this library; if not, write to the Free Software
+  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-  Modified 2012-02 by Criss Swaim, The Pineridge Group, LLC
-             
-  Copyright (c) 2011 N7MG Brett Howard
-  Copyright (c) 2011 Andrew Stern (N7UL)
-
-  This library is free software; you can redistribute it and/or
-  modify it under the terms of the GNU Lesser General Public
-  License as published by the Free Software Foundation; either
-  version 2.1 of the License, or (at your option) any later version.
-
-  This library is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Lesser General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public
-  License along with this library; if not, write to the Free Software
-  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-
-  $Id: Tsip.cpp 31 2011-06-12 17:33:08Z andrew@n7ul.com $ 
-
-*/
+  * $Id: Tsip.cpp 31 2011-06-12 17:33:08Z andrew@n7ul.com $
+  *
+  * 
+  *
+  * Modified 2012-02 by Criss Swaim, The Pineridge Group, LLC
+  * 	runs on linux 64bit
+  * 	add routines for endian compatibility wiht x86 hardware
+  * 	added file open function
+  * 	added routines to issue commands without msg returned
+  * 	added basic send message - get report routine
+  * 	added std get time and get xyz
+  *
+  *
+  * @todo
+  * 	Add test for endian hardware to determine compatibility
+  * 	
+  * Usage:
+  * @code
+  * 	std::string prot = '/dev/ttyS0'
+  * 	tsip::xyz_t xyz;
+  *		time_t gps_time;
+  * 	tsip gps(port);
+  * 	gps_time = gps.get_gps_time_utc();
+  * 	xyz = gps.get_xyz();
+  * @endcode
+  *
+  *	
+  *
+  */
 
 #include "tsip.h"
 
