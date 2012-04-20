@@ -45,7 +45,12 @@
   * 	std::string prot = '/dev/ttyS0'
   * 	tsip::xyz_t xyz;
   *		time_t gps_time;
+  * 
   * 	tsip gps(port);
+  *   or
+  * 	tsip gps;
+  * 	gps.set_gps_port(port);
+  * 
   * 	gps_time = gps.get_gps_time_utc();
   * 	xyz = gps.get_xyz();
   * @endcode
@@ -66,7 +71,7 @@
 * 	@param bool     verbose - optional
 * 
 */
-tsip::tsip(std::string port="/dev/ttyS0", bool verbose) {
+tsip::tsip(std::string _port, bool verbose) {
 	// set verbose
 	set_verbose(true);
 	set_debug(false);
@@ -76,22 +81,32 @@ tsip::tsip(std::string port="/dev/ttyS0", bool verbose) {
 	//init report fields
 	init_rpt();
 
-	// set the port
-	set_gps_port(port);
+	if (_port != "") {
+		open_gps_port(_port);
+	}
+	//// set the port
+	//set_gps_port(port);
 	
-    file = fopen(gps_port.c_str(), "r");
-//        FILE *file = fopen(gps_port.c_str(), "r");
+    //file = fopen(gps_port.c_str(), "r");
+////        FILE *file = fopen(gps_port.c_str(), "r");
 
-    if(!file)
-    {
-		//if open fails - terminate run
-        printf("Cannot open %s\n", gps_port.c_str());
-        exit;
-    }
+    //if(!file)
+    //{
+		////if open fails - terminate run
+        //printf("Cannot open %s\n", gps_port.c_str());
+        //exit;
+    //}
 
-    setup_serial_port(file);
+    //setup_serial_port(file);
 }
 
+/** Destructor.
+*
+*	Close the gps file
+*/
+tsip::~tsip() {
+	fclose(file);
+}
 
 /** initilize command/report fields
 *
@@ -167,14 +182,54 @@ std::string tsip::get_gps_port() {
 	return (gps_port);
 }
 
+/** open serial port
+*
+*   Open the gps port and initialize.
+*
+*   @param string   port name  "/dev/ttyS0"
+*   @return bool    true - success, false = fail
+*/
+bool tsip::open_gps_port(std::string port) 
+{	
+	if (port == "") {
+		port = gps_port;
+	}
+	if (port == "") {
+		printf("Port must be provided in call or in set_gps_port\n");
+		return(false);
+	}
 
+	// set the port
+	set_gps_port(port);
+	
+    file = fopen(gps_port.c_str(), "r");
+
+	if (file != NULL) {
+		setup_gps_port(file);
+		return(true);
+	} else {
+		printf("Cannot open %s\n", gps_port.c_str());
+		perror(gps_port.c_str());
+        return (false);
+	}
+    //if(!file) {
+		////if open fails - terminate run
+        //printf("Cannot open %s\n", gps_port.c_str());
+        //return (false);
+    //}
+	//printf("calling setup\n");
+    //setup_gps_port(file);
+    //printf("return from setup\n");
+    //return(true);
+}
+	
 /** set up serial port
 *
 *   Set the  parameters for the I/O comm port the gps is attached.
 *
-*   @oaram pointer to the serial port 'file'.
+*   @param pointer to the serial port 'file'.
 */
-void tsip::setup_serial_port(FILE *file)
+void tsip::setup_gps_port(FILE *file)
 {
     int fd;
     struct termios newtio;
@@ -829,7 +884,7 @@ time_t tsip::get_gps_time_utc() {
 *   @return xyz_t lat, long, alt  
 */
 tsip::xyz_t tsip::get_xyz() {
-	printf("XYZ rtn\n");
+
 	bool rc;
 	//build ab request - request time packet
 	m_command.extended.code = COMMAND_SUPER_PACKET;

@@ -473,12 +473,14 @@ class tsip {
 		int   m_report_length;
 
 		//public methods
-		tsip(std::string port, bool verbose=true);
+		tsip(std::string port="", bool verbose=true);
+		~tsip(void);
 		int encode(UINT8 c);			// encode byte stream into packets
 		void init_rpt(void); 			// initialize the report fields
 		void set_verbose(bool);         // set verbose
 		void set_debug(bool);        	// set debug
 		void set_gps_port(std::string gps_port);
+		bool open_gps_port(std::string port="");
 		std::string get_gps_port();
 		bool send_request_msg(_command_packet _cmd); 
 		bool get_report_msg(_command_packet _cmd);
@@ -506,7 +508,7 @@ class tsip {
 		} m_state;
 		
 		//methods
-		void setup_serial_port(FILE *file);
+		void setup_gps_port(FILE *file);
 		int update_report(void);		// update report with packet data
 		bool is_report_found(_command_packet &_cmd);
 		UINT16 b2_to_uint16(int bb, char r_code);	// convert 2 bytes to short integer

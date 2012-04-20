@@ -1,10 +1,11 @@
 #include "tsip.h"
-#include "get_gps_time.h"
+#include <iostream>
+//#include "get_gps_time.h"
 void print_report();
 std::string port = "/dev/ttyUSB0";
 tsip::xyz_t xyz;
 time_t gps_time;
-tsip gps(port);
+tsip gps;
 
 int main()
 {
@@ -18,8 +19,16 @@ int main()
     //gps.set_verbose(true);
     
 	//tsip get time
-    printf("---------getting time--TSIP-------\n");	
-    gps_time = gps.get_gps_time_utc();
+    printf("---------getting time--TSIP-------\n");
+    gps.set_gps_port(port);
+    bool rc = gps.open_gps_port();
+    printf("open rc: %i \n",rc);
+    if (!rc){
+		printf("--open failed, terminating job\n");
+		exit(1);
+	}
+	std::cout << "get utc time"<<std::endl;
+	gps_time = gps.get_gps_time_utc();
     if (gps_time) {
         printf("\nYear: %d, Month: %d, Day: %d, Hour: %d, Minutes: %d, Seconds: %d\n", year, month, day, hour, minute, second);
         printf("seconds: %d\n", gps_time);
@@ -76,8 +85,8 @@ void print_report() {
 		printf("           DAC Value: %x\n",gps.m_secondary_time.report.dac_value);
 		printf("         dac Voltage: %f %x\n",gps.m_secondary_time.report.dac_voltage,gps.m_secondary_time.report.dac_voltage);
 		printf("         Temperature: %f %x\n",gps.m_secondary_time.report.temperature,gps.m_secondary_time.report.temperature);
-		printf("            Latitude: %f\n",gps.m_secondary_time.report.latitude);
-		printf("           Longitude: %f\n",gps.m_secondary_time.report.longitude);
+		printf("        Rad Latitude: %f\n",gps.m_secondary_time.report.latitude);
+		printf("       Rad Longitude: %f\n",gps.m_secondary_time.report.longitude);
 		printf("            Altitude: %f\n",gps.m_secondary_time.report.altitude);
 
 		double _cf = 180/M_PI;
@@ -87,7 +96,7 @@ void print_report() {
 		printf(" C++            Long: %.9f\n",_yl);
 		printf(" rtn            Lat : %.9f\n",xyz.x);
 		printf(" rtn            Long: %.9f\n",xyz.y);
-		printf(" rnt             Alt: %.9f\n",xyz.z);
+		printf(" rtn             Alt: %.9f\n",xyz.z);
 	}
 	if (gps.m_updated.report.ecef_position_s) {
 				
