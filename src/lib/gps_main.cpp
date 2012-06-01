@@ -94,9 +94,9 @@ void print_report() {
 		printf(" C++        Latitude: %.9f\n",_xl);
 		double _yl = gps.m_secondary_time.report.longitude * _cf;
 		printf(" C++            Long: %.9f\n",_yl);
-		printf(" rtn            Lat : %.9f\n",xyz.x);
-		printf(" rtn            Long: %.9f\n",xyz.y);
-		printf(" rtn             Alt: %.9f\n",xyz.z);
+		printf(" rtn            Lat : %.9f\n",xyz.latitude);
+		printf(" rtn            Long: %.9f\n",xyz.longitude);
+		printf(" rtn             Alt: %.9f\n",xyz.altitude);
 	}
 	if (gps.m_updated.report.ecef_position_s) {
 				

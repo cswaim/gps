@@ -893,13 +893,13 @@ tsip::xyz_t tsip::get_xyz() {
 	rc = get_report_msg(m_command);
 
 	if (rc) {
-		xyz.x= m_secondary_time.report.latitude * _rad;
-		xyz.y= m_secondary_time.report.longitude * _rad;
-		xyz.z= m_secondary_time.report.altitude;
+		xyz.latitude= m_secondary_time.report.latitude * _rad;
+		xyz.longitude= m_secondary_time.report.longitude * _rad;
+		xyz.altitude= m_secondary_time.report.altitude;
 	} else {
-		xyz.x=0;
-		xyz.y=0;
-		xyz.z=0;
+		xyz.latitude=0;
+		xyz.longitude=0;
+		xyz.altitude=0;
 	}
 	return xyz;
 }

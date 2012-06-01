@@ -420,9 +420,9 @@ struct _unknown {
 class tsip {
 	public:
 		struct xyz_t {
-			double x;			//decimal degrees
-			double y;			//decimal degrees
-			double z;			//meters
+			double latitude;			//decimal degrees
+			double longitude;			//decimal degrees
+			double altitude;			//meters
 		};
 
 		//return parms
