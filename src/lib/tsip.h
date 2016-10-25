@@ -5,7 +5,7 @@
            The library configured to work with the Trimble Thunderbolt GPS
            Disciplined Oscillator (GPSDO) and is based on the
            "ThunderBolt GPS Disciplined Clock User Guide" Version 5.0
-           Part Number: 35326-30  November 2003  
+           Part Number: 35326-30  November 2003
 
   Modified 2012-02 by Criss Swaim, The Pineridge Group, LLC for Linux env
 
@@ -86,7 +86,7 @@ typedef unsigned short int UINT16;
 typedef unsigned int UINT32;
 typedef int SINT32;
 typedef float SINGLE;
-typedef double DOUBLE;	
+typedef double DOUBLE;
 
 // supported reports and super-reports
 const UINT8 REPORT_ECEF_POSITION_S			= 0x42;
@@ -102,10 +102,15 @@ const UINT8 REPORT_SUPER_UTC_GPS_TIME		= 0xa2;
 const UINT8 REPORT_SUPER_PRIMARY_TIME		= 0xab;
 const UINT8 REPORT_SUPER_SECONDARY_TIME		= 0xac;
 
+//supported super-command subcommands
+const UINT8 COMMAND_SAVE_EEPROM             = 0x4c;
+const UINT8 COMMAND_SELF_SURVEY             = 0xa6;
+const UINT8 COMMAND_SET_SELF_SURVEY_PARAMS  = 0xa9;
+
 // supported commands and super-commands
 const UINT8 COMMAND_COLD_FACTORY_RESET		= 0x1e;
 const UINT8 COMMAND_REQUEST_SW_VERSION		= 0x1f;
-const UINT8 COMMAND_WARM_RESET_SELF_TEST	= 0x25; 
+const UINT8 COMMAND_WARM_RESET_SELF_TEST	= 0x25;
 const UINT8 COMMAND_SET_IO_OPTIONS			= 0x35;
 const UINT8 COMMAND_REQUEST_POSITION		= 0x37;
 const UINT8 COMMAND_SUPER_PACKET			= 0x8E;
@@ -130,6 +135,15 @@ union _command_packet {
 		UINT8 data[MAX_COMMAND-2];
 		UINT8 cmd_len;
 	} extended;
+	//struct _extended_8EA9 {
+		//UINT8 code;
+		//UINT8 subcode;
+		//UINT8 enable_survey;
+		//UINT8 save_position;
+		//UINT32 self_survey_length;
+		//UINT32 reserved_8Ea9;
+		//UINT8 cmd_len;
+	//} extended_8eA9;
 };
 
 /****************************
@@ -159,7 +173,7 @@ struct _ecef_position_s {
 		SINGLE x;				// X meters
 		SINGLE y; 				// Y meters
 		SINGLE z;				// Z meters
-		SINGLE time_of_fix;		// time of fix in GPS or UTC seconds 
+		SINGLE time_of_fix;		// time of fix in GPS or UTC seconds
 	} report;
 };
 
@@ -220,7 +234,7 @@ struct _io_options {
 			} bits;
 		} position;
 		union _velocity {						// velocity options
-			UINT8 value;   
+			UINT8 value;
 			struct _bits {
 				UINT8 ecef				: 1;
 				UINT8 enu				: 1;
@@ -255,7 +269,7 @@ struct _enu_velocity {
 		SINGLE north;			// m/s + north, - south
 		SINGLE up;				// m/s + up, - down
 		SINGLE clock_bias;		// meters/second
-		SINGLE time_of_fix;		// seconds (GPS/UTC) 
+		SINGLE time_of_fix;		// seconds (GPS/UTC)
 	} report;
 };
 
@@ -267,7 +281,7 @@ struct _ecef_position_d {
 		DOUBLE y; 				// Y meters
 		DOUBLE z;				// Z meters
 		DOUBLE clock_bias;		// clock bias meters
-		SINGLE time_of_fix;		// time of fix in GPS or UTC seconds 
+		SINGLE time_of_fix;		// time of fix in GPS or UTC seconds
 	} report;
 };
 
@@ -283,7 +297,7 @@ struct _double_position {
 	} report;
 };
 
-// 8F-A2 UTC GPS Time 
+// 8F-A2 UTC GPS Time
 struct _utc_gps_time {
 	bool  valid;
 	struct _0x8FA2 {
@@ -291,7 +305,7 @@ struct _utc_gps_time {
 			UINT8 value;
 			UINT8 date_time_fmt		: 1;	// 0-gps time, 1-utc time
 			UINT8 pps_reference		: 1;	// 0-gps time, 1-utc time
-			UINT8  unused			: 6;	// unused bits 
+			UINT8  unused			: 6;	// unused bits
 		} bits;
 	} report;
 };
@@ -301,7 +315,7 @@ struct _utc_gps_time {
 struct _primary_time {
 	bool  valid;
 	struct _0x8FAB {
-		UINT32  seconds_of_week; // GPS seconds since GPS Sunday 00:00:00 
+		UINT32  seconds_of_week; // GPS seconds since GPS Sunday 00:00:00
 		UINT16  week_number;	// GPS week number
 		SINT16  utc_offset;		// GPS-UTC seconds difference
 		union _flags {
@@ -310,9 +324,9 @@ struct _primary_time {
 				UINT8  utc_time		: 1;	// UTC/GPS time
 				UINT8  utc_pps		: 1;	// UTC/GPS PPS
 				UINT8  time_not_set	: 1;	// time set/not set
-				UINT8  no_utc_info	: 1;	// have/do not have UTC info 
+				UINT8  no_utc_info	: 1;	// have/do not have UTC info
 				UINT8  test_mode_time	: 1;	// time from GPS/test mode time
-				UINT8  unused			: 3;	// unused bits 
+				UINT8  unused			: 3;	// unused bits
 			} bits;
 		} flags;				// timing flags
 		UINT8   seconds;		// 0-59  (UTC/GPS flags bit0 = 1/0)
@@ -397,7 +411,7 @@ struct _secondary_time {
 			#define DISCIPLINING_ACTIVITY_RECOVERY_MODE		8
 		UINT8   spare_status1;
 		UINT8   spare_status2;
-		SINGLE  pps_offset;				// estimate of UTC/GPS offset (ns) 
+		SINGLE  pps_offset;				// estimate of UTC/GPS offset (ns)
 		SINGLE  tenMHz_offset;			// estimate of UTC/GPS offset (ppb)
 		UINT32  dac_value;
 		SINGLE  dac_voltage;			// voltage
@@ -480,22 +494,26 @@ class tsip {
 		void set_verbose(bool);         // set verbose
 		void set_debug(bool);        	// set debug
 		void set_gps_port(std::string gps_port);
+		bool set_survey_params(int survey_cnt);
+		bool set_auto_save();
+		bool store_position();
+		bool start_self_survey();
 		bool open_gps_port(std::string port="");
 		std::string get_gps_port();
-		bool send_request_msg(_command_packet _cmd); 
+		bool send_request_msg(_command_packet _cmd);
 		bool get_report_msg(_command_packet _cmd);
 
-		//gps_api(std::string port, bool verbose=true); 
+		//gps_api(std::string port, bool verbose=true);
 		//bool get_gps_time_utc(time_t &seconds_since_epoch);
 		time_t get_gps_time_utc();
 		xyz_t get_xyz();
 		bool send_get_time();
-		
-		
+
+
 	private:
 		bool verbose;
 		bool debug;
-		
+
 		std::string gps_port;
 		FILE *file;
 
@@ -506,7 +524,7 @@ class tsip {
 			DATA,
 			DATA_DLE
 		} m_state;
-		
+
 		//methods
 		void setup_gps_port(FILE *file);
 		int update_report(void);		// update report with packet data
@@ -518,4 +536,4 @@ class tsip {
 };
 
 
-#endif 
+#endif

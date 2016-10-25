@@ -1,32 +1,32 @@
 /**
  *	@file tsip.cpp
- * 	@brief class implementation for the simplified Trimble Standard Interface Protocol (TSIP) library 
+ * 	@brief class implementation for the simplified Trimble Standard Interface Protocol (TSIP) library
  *	@author 	(original) Brett Howard, Andrew Stern
  *	@author 	Criss Swaim
  * 	author uri 	http://www.tpginc.net/
- * 	@version	v1.0	
+ * 	@version	v1.0
  * 	@date		2012-02
-         
+
  *  @copyright 	Copyright (c) 2011 N7MG Brett Howard
  *  @copyright	Copyright (c) 2011 Andrew Stern (N7UL)
- * 
+ *
  *  This library is free software; you can redistribute it and/or
   *  modify it under the terms of the GNU Lesser General Public
   * License as published by the Free Software Foundation; either
   * version 2.1 of the License, or (at your option) any later version.
-  * 
+  *
   * This library is distributed in the hope that it will be useful,
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
   * $Id: Tsip.cpp 31 2011-06-12 17:33:08Z andrew@n7ul.com $
   *
-  * 
+  *
   *
   * Modified 2012-02 by Criss Swaim, The Pineridge Group, LLC
   * 	runs on linux 64bit
@@ -39,23 +39,23 @@
   *
   * @todo
   * 	Add test for endian hardware to determine compatibility
-  * 	
+  *
   * Usage:
   * @code
   * 	std::string prot = '/dev/ttyS0'
   * 	tsip::xyz_t xyz;
   *		time_t gps_time;
-  * 
+  *
   * 	tsip gps(port);
   *   or
   * 	tsip gps;
   * 	gps.set_gps_port(port);
-  * 
+  *
   * 	gps_time = gps.get_gps_time_utc();
   * 	xyz = gps.get_xyz();
   * @endcode
   *
-  *	
+  *
   *
   */
 
@@ -69,7 +69,7 @@
 *
 * 	@param string   port name  "/dev/ttyS0"
 * 	@param bool     verbose - optional
-* 
+*
 */
 tsip::tsip(std::string _port, bool verbose) {
 	// set verbose
@@ -86,7 +86,7 @@ tsip::tsip(std::string _port, bool verbose) {
 	}
 	//// set the port
 	//set_gps_port(port);
-	
+
     //file = fopen(gps_port.c_str(), "r");
 ////        FILE *file = fopen(gps_port.c_str(), "r");
 
@@ -111,8 +111,8 @@ tsip::~tsip() {
 /** initilize command/report fields
 *
 *   This routine initialized the command/report fields for each
-*	command request sent to the process.  
-*   
+*	command request sent to the process.
+*
 *	@return  void
 */
 void tsip::init_rpt()
@@ -176,7 +176,7 @@ void tsip::set_gps_port(std::string port="/dev/ttyS0") {
 *
 *   Get the gps_port setting.
 *
-*   @return string::gps_port  
+*   @return string::gps_port
 */
 std::string tsip::get_gps_port() {
 	return (gps_port);
@@ -189,8 +189,8 @@ std::string tsip::get_gps_port() {
 *   @param string   port name  "/dev/ttyS0"
 *   @return bool    true - success, false = fail
 */
-bool tsip::open_gps_port(std::string port) 
-{	
+bool tsip::open_gps_port(std::string port)
+{
 	if (port == "") {
 		port = gps_port;
 	}
@@ -201,7 +201,7 @@ bool tsip::open_gps_port(std::string port)
 
 	// set the port
 	set_gps_port(port);
-	
+
     file = fopen(gps_port.c_str(), "r");
 
 	if (file != NULL) {
@@ -222,7 +222,7 @@ bool tsip::open_gps_port(std::string port)
     //printf("return from setup\n");
     //return(true);
 }
-	
+
 /** set up serial port
 *
 *   Set the  parameters for the I/O comm port the gps is attached.
@@ -238,7 +238,7 @@ void tsip::setup_gps_port(FILE *file)
 
     memset(&newtio, 0, sizeof(newtio)); /* clear struct for new port settings */
 
-    /* 
+    /*
         B9600: Set bps rate. You could also use cfsetispeed and cfsetospeed.
         CS8     : 8n1 (8bit,no parity,1 stopbit)
         CLOCAL  : local connection, no modem contol
@@ -257,8 +257,8 @@ void tsip::setup_gps_port(FILE *file)
      */
     newtio.c_oflag = 0;
 
-    /* 
-        initialize all control characters 
+    /*
+        initialize all control characters
         default values can be found in /usr/include/termios.h, and are given
         in the comments, but we don't need them here
      */
@@ -271,7 +271,7 @@ void tsip::setup_gps_port(FILE *file)
      */
     newtio.c_lflag = 0;//ICANON;
 
-    /* 
+    /*
         now clean the modem line and activate the settings for the port
      */
     tcflush(fd, TCIFLUSH);
@@ -287,10 +287,10 @@ void tsip::setup_gps_port(FILE *file)
 *
 * 	***note x86 is a low-endian machine, the trimble is high-endian
 *      so the bytes must be flipped
-*   
+*
 * 	@param   int  the position of the beg byte in m_report
 * 	@param   char the code r or e to  idenity which array to pull from
-*	@return  UINIT16 
+*	@return  UINIT16
 */
 UINT16 tsip::b2_to_uint16(int bb, char r_code) {
 	UINT16 x = 0;
@@ -303,7 +303,7 @@ UINT16 tsip::b2_to_uint16(int bb, char r_code) {
 
 	return x;
 }
-	
+
 /** convert 4 bytes to int
 *
 *   Conversion routine to accept the bytes from m_command begining
@@ -312,10 +312,10 @@ UINT16 tsip::b2_to_uint16(int bb, char r_code) {
 *
 * 	***note x86 is a low-endian machine, the trimble is high-endian
 *      so the bytes must be flipped
-*   
+*
 * 	@param   int  the position of the beg byte in m_report
 * 	@param   char the code r or e to  idenity which array to pull from
-*	@return  UINIT32 
+*	@return  UINIT32
 */
 UINT32 tsip::b4_to_uint32(int bb, char r_code) {
 	UINT32 x = 0;
@@ -325,10 +325,10 @@ UINT32 tsip::b4_to_uint32(int bb, char r_code) {
 	} else if (r_code == 'e') {
 		x = (m_report.extended.data[bb] << 24) + (m_report.extended.data[bb+1] << 16) + (m_report.extended.data[bb+2] << 8) + m_report.extended.data[bb+3];
 	}
-	
+
 	return x;
 }
-	
+
 /** convert 4 bytes to single
 *
 *   Conversion routine to accept the bytes from m_command begining
@@ -337,7 +337,7 @@ UINT32 tsip::b4_to_uint32(int bb, char r_code) {
 *
 * 	***note x86 is a low-endian machine, the trimble is high-endian
 *      so the bytes must be flipped
-*   
+*
 * 	@param   int  the position of the first byte in m_report
 * 	@param   char the code r or e to  idenity which array to pull from
 *	@return  singel
@@ -345,7 +345,7 @@ UINT32 tsip::b4_to_uint32(int bb, char r_code) {
 SINGLE tsip::b4_to_single(int bb, char r_code) {
 	union _sgl_t {
 		UINT8 data[sizeof(SINGLE)];
-		char cdata[sizeof(SINGLE)]; 
+		char cdata[sizeof(SINGLE)];
 		SINGLE value;
 	} sgl;
 
@@ -359,12 +359,12 @@ SINGLE tsip::b4_to_single(int bb, char r_code) {
 			sgl.cdata[j] = m_report.extended.data[bb+i];
 		}
 	}
-	
+
 	return sgl.value;
-	
-	
+
+
 }
-	 
+
 /** convert 8 bytes to double
 *
 *   Conversion routine to accept the bytes from m_command begining
@@ -373,10 +373,10 @@ SINGLE tsip::b4_to_single(int bb, char r_code) {
 *
 * 	***note x86 is a low-endian machine, the trimble is high-endian
 *      so the bytes must be flipped
-*   
+*
 * 	@param   int  the position of the first byte in m_report
 * 	@param   char the code r or e to  idenity which array to pull from
-*	@return  double 
+*	@return  double
 */
 DOUBLE tsip::b8_to_double(int bb, char r_code) {
 	union _dbl_t {
@@ -414,7 +414,7 @@ bool tsip::is_report_found(_command_packet &_cmd) {
 	bool isfound = false;
 
 	switch (_cmd.report.code){
-		
+
 		// 0x1e
 		case COMMAND_COLD_FACTORY_RESET :
 			//0x45 report_sw_version
@@ -422,7 +422,7 @@ bool tsip::is_report_found(_command_packet &_cmd) {
 				isfound = true;
 			}
 			break;
-			
+
 		// 0x1f
 		case COMMAND_REQUEST_SW_VERSION :
 			//0x45 report_sw_version
@@ -430,15 +430,15 @@ bool tsip::is_report_found(_command_packet &_cmd) {
 				isfound = true;
 			}
 			break;
-			
-		// 0x25 
+
+		// 0x25
 		case COMMAND_WARM_RESET_SELF_TEST :
 			//0x45 report_sw_version
 			if (m_updated.report.sw_version) {
 				isfound = true;
 			}
 			break;
-			
+
 		// 0x35
 		case COMMAND_SET_IO_OPTIONS :
 			// 0x55	 REPORT_IO_OPTIONS
@@ -446,7 +446,7 @@ bool tsip::is_report_found(_command_packet &_cmd) {
 				isfound = true;
 			}
 			break;
-			
+
 		// 0x37
 		case COMMAND_REQUEST_POSITION :
 			// 0x42 REPORT_ECEF_POSITION_S
@@ -454,12 +454,12 @@ bool tsip::is_report_found(_command_packet &_cmd) {
 				isfound = true;
 			}
 			// 0x43 REPORT_ECEF_VELOCITY
-			
+
 			// 0x83 REPORT_ECEF_POSITION_D
 			//if (m_updated.report.ecef_position_d) {
 			//	isfound = true;
 			//}
-			break;	
+			break;
 		//0x8E
 		case COMMAND_SUPER_PACKET:
 			switch (_cmd.extended.subcode) {
@@ -479,7 +479,7 @@ bool tsip::is_report_found(_command_packet &_cmd) {
 				case REPORT_SUPER_SECONDARY_TIME :
 					if (m_updated.report.secondary_time) {
 						isfound = true;
-					}	
+					}
 					break;
 			}
 			break;
@@ -492,8 +492,8 @@ bool tsip::is_report_found(_command_packet &_cmd) {
 	// 0x42 REPORT_ECEF_POSITION_S:
 	// 0x43 REPORT_ECEF_VELOCITY
 	// 0x4a	REPORT_SINGLE_POSITION
-	// 0x56 REPORT_ENU_VELOCITY				
-	// 0x83 REPORT_ECEF_POSITION_D			
+	// 0x56 REPORT_ENU_VELOCITY
+	// 0x83 REPORT_ECEF_POSITION_D
 	// 0x84 REPORT_DOUBLE_POSITION
 
 /** encode byte stream into TSIP packets
@@ -507,7 +507,7 @@ bool tsip::is_report_found(_command_packet &_cmd) {
 int tsip::encode(UINT8 c)
 {
 	switch (m_state) {
- 
+
 	case START:
 		// search for start
 		if (c == DLE)
@@ -537,7 +537,7 @@ int tsip::encode(UINT8 c)
 		break;
 
 	case DATA_DLE:
-		// escaped data 
+		// escaped data
 		if (c == DLE) {
 			m_state = DATA;
 			if (m_report_length < MAX_DATA) {
@@ -590,7 +590,7 @@ int tsip::update_report()
 		m_ecef_position_s.report.y = (m_report.extended.data[4] << 24) + (m_report.extended.data[5] << 16) + (m_report.extended.data[6] << 8) + m_report.extended.data[7];
 		m_ecef_position_s.report.z = (m_report.extended.data[8] << 24) + (m_report.extended.data[9] << 16) + (m_report.extended.data[10] << 8) + m_report.extended.data[11];
 		m_ecef_position_s.report.time_of_fix = (m_report.extended.data[12] << 24) + (m_report.extended.data[13] << 16) + (m_report.extended.data[14] << 8) + m_report.extended.data[15];
-	
+
 		break;
 
 	case REPORT_ECEF_POSITION_D:
@@ -657,7 +657,7 @@ int tsip::update_report()
 			m_updated.report.utc_gps_time = 1;
 			m_utc_gps_time.valid = true;
 			rlen = sizeof(m_utc_gps_time.report);
-			
+
 			m_utc_gps_time.report.bits.value = m_report.extended.data[0];
 			break;
 
@@ -696,17 +696,17 @@ int tsip::update_report()
 			m_secondary_time.report.disciplining_activity = m_report.extended.data[12];
 			m_secondary_time.report.spare_status1 = m_report.extended.data[13];
 			m_secondary_time.report.spare_status2 = m_report.extended.data[14];
-			
+
 			m_secondary_time.report.pps_offset = b4_to_single(15,'e');
 			m_secondary_time.report.tenMHz_offset = b4_to_single(19,'e');
 			m_secondary_time.report.dac_value = b4_to_uint32(23,'e');
 			m_secondary_time.report.dac_voltage = b4_to_single(27,'e');
 			m_secondary_time.report.temperature = b4_to_single(31,'e');
-			
+
 			m_secondary_time.report.latitude = b8_to_double(35,'e');
 			m_secondary_time.report.longitude = b8_to_double(43,'e');
 			m_secondary_time.report.altitude = b8_to_double(51,'e');
-		
+
 			m_secondary_time.report.spare[0] = m_report.extended.data[59];
 			m_secondary_time.report.spare[1] = m_report.extended.data[60];
 			m_secondary_time.report.spare[2] = m_report.extended.data[61];
@@ -734,7 +734,7 @@ int tsip::update_report()
 		rlen = sizeof(m_unknown.report.raw.data);
         break;
 	}
-	
+
 	// report strucute updated
 	if (rlen > 0 ) {
 		if (debug) {
@@ -745,7 +745,7 @@ int tsip::update_report()
 			for (int k=0;k<m_report_length;k++){printf(" %x",m_report.raw.data[k]);}
 			printf("\n");
 		}
-		
+
 
 		return 1;
 	}
@@ -756,12 +756,12 @@ int tsip::update_report()
 
 /** get_request_msg
 *
-*   send a sequence of commands to the gps. 
+*   send a sequence of commands to the gps.
 *
-*   @return bool  
+*   @return bool
 */
 bool tsip::send_request_msg(_command_packet _cmd) {
-	
+
 	unsigned char buffer[256];
 	buffer[0] = DLE;
 	int x = 1;
@@ -783,37 +783,37 @@ bool tsip::send_request_msg(_command_packet _cmd) {
 /** get_report_msg
 *
 *   send a sequence of commands to the gps.  The loop is continued until
-*   the correct message id is returned.  
+*   the correct message id is returned.
 *
-*   @return bool  
+*   @return bool
 */
 bool tsip::get_report_msg(_command_packet _cmd) {
 	//clear report flags
 	init_rpt();
-	
+
 	// init local var
     unsigned char ch = 0;
-    
-    
+
+
 RETRY:
 	// send the commmand
     send_request_msg(m_command);
-	
-	// read stream and pass to encode routine untile packet complete 
+
+	// read stream and pass to encode routine untile packet complete
 	int loop_cnt=0;
 	while (!is_report_found(_cmd)) {
 		int rc = 0;
-		while (rc == 0) {	
+		while (rc == 0) {
 			rc = encode(getc(file));
 		}
 		loop_cnt++;
 		if (loop_cnt >20) break;
 	}
-	
+
 	//set flag
 	bool rpt_fnd = is_report_found(_cmd);
 
-	
+
 	if(verbose){
 		if (rpt_fnd) {
 				printf("Packet %x %x found \n",m_report.report.code,m_report.extended.subcode);
@@ -822,7 +822,7 @@ RETRY:
 		}
 		printf("\n");
 	}
-	
+
 	return (rpt_fnd);
 }
 
@@ -831,19 +831,19 @@ RETRY:
 *   updates the time_t referenced structure passed to method.
 *
 
-*   @return time_t 
+*   @return time_t
 */
 time_t tsip::get_gps_time_utc() {
 	bool rc;
-	
+
 	//build a2 request - set UTC
 	m_command.extended.code = COMMAND_SUPER_PACKET;
 	m_command.extended.subcode = REPORT_SUPER_UTC_GPS_TIME;
 	m_command.extended.data[0] = 0x3;
 	m_command.extended.cmd_len = 3;
-	
+
 	rc = send_request_msg(m_command);
-	
+
 	//build ab request - request time packet
 	m_command.extended.code = COMMAND_SUPER_PACKET;
 	m_command.extended.subcode = REPORT_SUPER_PRIMARY_TIME;
@@ -881,7 +881,7 @@ time_t tsip::get_gps_time_utc() {
 *
 *   Get the xyz (lat, long, alt) from the gps.
 *
-*   @return xyz_t lat, long, alt  
+*   @return xyz_t lat, long, alt
 */
 tsip::xyz_t tsip::get_xyz() {
 
@@ -902,4 +902,79 @@ tsip::xyz_t tsip::get_xyz() {
 		xyz.altitude=0;
 	}
 	return xyz;
+}
+
+/** set_survey_period
+*
+*   updates the survey count.  Default is 2000.
+*
+*   @return bool rc
+*/
+bool tsip::set_survey_params(int survey_cnt) {
+	bool rc;
+
+	//build 8E-A9 request - set survey period
+	m_command.extended.code = COMMAND_SUPER_PACKET;
+	m_command.extended.subcode = COMMAND_SELF_SURVEY_PARAMS;
+
+	struct data_8ea9 {
+		UINT8 enable_survey;
+		UINT8 save_position;
+		UINT32 self_survey_length;
+		UINT32 reserved_8ea9a;
+	}
+
+	//enable survey
+	data_8ea9.enable_survey = 1;
+
+	//save position
+	data_8ea9.save_position = 1;
+
+	//survey length
+	data_8ea9.reserved_8e9a = 0;
+	data_8ea9.self_survey_length = survey_cnt;
+	m_command.extended.data = data_8ea9;
+	m_command.extended.cmd_len = 12;
+
+
+	rc = send_request_msg(m_command);
+	return rc;
+}
+
+/** set_auto save
+*
+*   set the auto save
+*
+*   @return bool rc
+*/
+bool tsip::set_auto_save() {
+	bool rc;
+
+	//build 8E- request - set autosave
+	m_command.extended.code = COMMAND_SUPER_PACKET;
+	m_command.extended.subcode = REPORT_SUPER_UTC_GPS_TIME;
+	m_command.extended.data[0] = 0x3;
+	m_command.extended.cmd_len = 4;
+
+	rc = send_request_msg(m_command);
+	return rc;
+}
+
+/** start self survey
+*
+*   start the self_survey
+*
+*   @return bool rc
+*/
+bool tsip::start_self_survey() {
+	bool rc;
+
+	//build 8E-A6 request - start self survey
+	m_command.extended.code = COMMAND_SUPER_PACKET;
+	m_command.extended.subcode = COMMAND_SELF_SURVEY;
+	m_command.extended.data[0] = 0x0;
+	m_command.extended.cmd_len = 4;
+
+	rc = send_request_msg(m_command);
+	return rc;
 }
