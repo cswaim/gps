@@ -12,12 +12,12 @@ int main()
 	//std::string port = "/dev/ttyUSB0";
     int year, month, day, hour, minute, second;
 
-	
-	//printf("----quiet---getting time--TSIP-------\n");	
+
+	//printf("----quiet---getting time--TSIP-------\n");
    // gps.set_verbose(false);
    // gps_time = gps.get_gps_time_utc();
     //gps.set_verbose(true);
-    
+
 	//tsip get time
     printf("---------getting time--TSIP-------\n");
     gps.set_gps_port(port);
@@ -34,7 +34,7 @@ int main()
         printf("seconds: %d\n", gps_time);
     }
     print_report();
-    
+
     //orig get time
 	printf("-----------getting gps time .h----\n");
 	//time_t seconds_since_epoch;
@@ -45,15 +45,22 @@ int main()
 	printf("---------getting xyz---------\n");
     xyz = gps.get_xyz();
     print_report();
-    
+
+    //start self survey
+    int rc;
+    rc = gps.set_survey_params(60);
+    std::cout << "self survey params rc: " << rc << std::endl;
+    rc = gps.start_self_survey();
+    std::cout << "self survey rc: " << rc << std::endl;
+
 	//get out
     return 0;
 }
 
 void print_report() {
-	
+
 	if (gps.m_updated.report.primary_time) {
-				
+
 		printf("\n");
 		printf("Primary Time\n");
 		printf("Seconds of week: %li\n",gps.m_primary_time.report.seconds_of_week);
@@ -69,7 +76,7 @@ void print_report() {
 	}
 	//ac
 	if (gps.m_updated.report.secondary_time) {
-				
+
 		printf("\n");
 		printf("Secondary Time\n");
 		printf("       receiver mode: %x \n",gps.m_secondary_time.report.receiver_mode);
@@ -99,16 +106,16 @@ void print_report() {
 		printf(" rtn             Alt: %.9f\n",xyz.altitude);
 	}
 	if (gps.m_updated.report.ecef_position_s) {
-				
+
 		printf("\n");
 		printf("   Latitude: %f %x\n",gps.m_ecef_position_s.report.x,gps.m_ecef_position_s.report.x);
 		printf("  Longitude: %f %x\n",gps.m_ecef_position_s.report.y,gps.m_ecef_position_s.report.y);
 		printf("   Altitude: %f %x\n",gps.m_ecef_position_s.report.z,gps.m_ecef_position_s.report.z);
 		printf("time of fix: %f\n",gps.m_ecef_position_s.report.time_of_fix);
-		
+
 	}
 	if (gps.m_updated.report.ecef_position_d) {
-				
+
 		printf("\n");
 		printf("ecef Position D\n");
 		printf("   Latitude: %d %x\n",gps.m_ecef_position_d.report.x,gps.m_ecef_position_d.report.x);
@@ -116,10 +123,10 @@ void print_report() {
 		printf("   Altitude: %d %x\n",gps.m_ecef_position_d.report.z,gps.m_ecef_position_d.report.z);
 		printf(" clock bias: %d\n",gps.m_ecef_position_d.report.clock_bias);
 		printf("time of fix: %d\n",gps.m_ecef_position_d.report.time_of_fix);
-		
+
 	}
 	if (gps.m_updated.report.utc_gps_time) {
-				
+
 		printf("\n");
 		printf("UTC GPS Time\n");
 		printf("Seconds of week: %li %x\n",gps.m_primary_time.report.seconds_of_week,gps.m_primary_time.report.seconds_of_week);
