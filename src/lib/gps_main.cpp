@@ -1,4 +1,4 @@
-#include "tsip.h"
+#include <tsip.h>
 #include <iostream>
 //#include "get_gps_time.h"
 void print_report();
@@ -47,7 +47,6 @@ int main()
     print_report();
 
     //start self survey
-    int rc;
     rc = gps.set_survey_params(60);
     std::cout << "self survey params rc: " << rc << std::endl;
     rc = gps.start_self_survey();

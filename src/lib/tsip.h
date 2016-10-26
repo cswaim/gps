@@ -144,6 +144,15 @@ union _command_packet {
 		//UINT32 reserved_8Ea9;
 		//UINT8 cmd_len;
 	//} extended_8eA9;
+	struct _data_8ea9 {
+		UINT8 code;
+		UINT8 subcode;
+		UINT8 enable_survey;
+		UINT8 save_position;
+		UINT32 self_survey_length;
+		UINT32 reserved_8ea9;
+		UINT8 cmd_len;
+	} data_8ea9;
 };
 
 /****************************

@@ -1,9 +1,0 @@
-#!/bin/sh -x
-
-rm -fr config.cache autom4te*.cache
-
-aclocal 
-autoconf
-#autoheader
-libtoolize --automake
-automake 
