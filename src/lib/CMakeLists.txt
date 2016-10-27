@@ -4,7 +4,7 @@
 include_directories(${CMAKE_SOURCE_DIR}/src/lib)
 
 list(APPEND gps_sources
-    gps_main.cpp
+    gps_test.cpp
     tsip.cpp
     )
 
@@ -15,6 +15,6 @@ if(NOT gps_sources)
 endif(NOT gps_sources)
 
 
-add_executable(gps_main gps_main.cpp tsip.cpp)
+add_executable(gps_test gps_test.cpp tsip.cpp)
 #target_link_libraries(gps_main build)
 
