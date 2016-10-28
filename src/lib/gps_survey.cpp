@@ -27,9 +27,11 @@
 #include <gps_survey.h>
 
 namespace {
-  const size_t ERROR_IN_COMMAND_LINE = 1;
+  const size_t ERROR_IN_COMMAND_LINE = 3;
   const size_t SUCCESS = 0;
-  const size_t ERROR_UNHANDLED_EXCEPTION = 2;
+  const size_t FAILURE = 1;
+  const size_t ERROR_UNHANDLED_EXCEPTION = 4;
+  const size_t EXIT_HELP = 2;
 }
 using namespace std;
 
@@ -37,10 +39,10 @@ int proc_args(int argc,char**  argv) {
 	// Declare the supported options.
 	po::options_description desc("Allowed options");
 	desc.add_options()
-		("help", "display help text")
-		("sleep,s", po::value<int>(), "sleep delay seconds, default is 100")
-		("position,p", po::value<int>(), "position samples, default is 100")
-		("gps-port", po::value<string>(), "gps port, default is /dev/ttyUSB0")
+		("help,h", "display help text")
+		("wait-sec,w", po::value<int>(), "sleep delay seconds, default is 100")
+		("survey-cnt,s", po::value<int>(), "survey sample cnt to fix position, default is 100")
+		("gps-port,g", po::value<string>(), "gps port, default is /dev/ttyUSB0")
 	;
 
 	//po::variables_map vm;
@@ -50,7 +52,7 @@ int proc_args(int argc,char**  argv) {
 		if (vm.count("help")) {
 			cout << "gps_survey will reset the gps location" << endl << endl;
 			cout << desc << "\n";
-			return 1;
+			return EXIT_HELP;
 		}
 
 		po::notify(vm);  //throws on error, do after help
@@ -61,77 +63,101 @@ int proc_args(int argc,char**  argv) {
 		return ERROR_IN_COMMAND_LINE;
 	}
 
+	cout << endl;
 	//set run parms
-	if (vm.count("sleep")) {
-		sleep_sec = vm["sleep"].as<int>();
+	if (vm.count("wait-sec")) {
+		wait_sec = vm["wait-sec"].as<int>();
 	} else {
-		sleep_sec = 100;
+		wait_sec = 100;
 	}
+	cout << "wait_sec set: " << wait_sec << endl;
 
-	if (vm.count("survey")) {
-		survey_cnt = vm["survey"].as<int>();
+	if (vm.count("survey-cnt")) {
+		survey_cnt = vm["survey-cnt"].as<int>();
 	} else {
 		survey_cnt = 200;
 	}
+	cout << "survey_cnt set: " << survey_cnt << endl;
 
-	if (vm.count("gps_port")) {
-		gps_port = vm["gps_port"].as<string>();
+
+	if (vm.count("gps-port")) {
+		gps_port = vm["gps-port"].as<string>();
 	} else {
 		gps_port = "/dev/ttyUSB0";
 	}
+	cout << "gps_port set: " << gps_port << endl;
+
 
 	return 0;
 }
 
 void test_prt(int argc,char **argv) {
-	cout << "----from test_prt--------" << endl;
+	cout << endl << "----from test_prt--------" << endl;
 	cout << "number parms: " << argc << " -- parms: " << argv << endl;
 		for (int i =0; i < argc; i++) {
 			cout << argv[i] << endl;
 		}
-	if (vm.count("sleep")) {
-		cout << "sleep: " << vm["sleep"].as<int>() << endl;
+	if (vm.count("wait-sec")) {
+		cout << "wait-sec: " << vm["wait-sec"].as<int>() << endl;
 	} else {
-		cout << "variable sleep not found" << endl;
+		cout << "variable wait-sec not found" << endl;
 		//cout << vm;
 	}
 	cout << endl;
-	cout << boost::format("  gps_port: %s") % gps_port << endl;
-	cout << boost::format("survey_cnt: %i") % survey_cnt << endl;
-	cout << boost::format(" sleep_cnt: %i") % sleep_sec << endl;
+	cout << boost::format("  gps-port: %s") % gps_port << endl;
+	cout << boost::format("survey-cnt: %i") % survey_cnt << endl;
+	cout << boost::format("  wait-sec: %i") % wait_sec << endl;
+	
+	cout << endl << "-------------------------" << endl << endl;
 }
 
 int main(int argc,char **argv) {
 
 	try {
 		int rtn = proc_args(argc,argv);
-		if (rtn == 1) {
-			cout << "error encountered in parms" << endl;
+		if (rtn > EXIT_SUCCESS) {
+			if (rtn != EXIT_HELP) {
+				cout << " ***(" << rtn << ") error encountered in parms***" << endl << endl;
+			}
+			throw ERROR_IN_COMMAND_LINE;
 		}
-
-		test_prt(argc,argv);
+		
+		//test_prt(argc,argv);
 
 		//instantiate gps class
 		cout << boost::format("gps is on port: %s") % gps_port<< endl;
-		tsip gps;
-		gps.set_gps_port(gps_port);             
-		//gps_time = gps.get_gps_time_utc();
-		//struct tm *gps_tminfo = gmtime(&gps_time);
+		tsip gps(gps_port);
 		
 		bool rc;
 		//set the survey count
+		cout << "setting survey_count to " << survey_cnt << endl;
 		rc = gps.set_survey_params(survey_cnt);
+		
 		//set auto save feature
+		cout << "setting autosave" << endl;
 		rc = gps.set_auto_save();
+		
 		//start self survey
+		cout << "starting self survey for " << survey_cnt << " position readings" << endl;
 		rc = gps.start_self_survey();
+		
+		//wait for survey to finish
+		if (wait_sec > 0) {
+			cout << "waiting for " << wait_sec << " seconds." << endl;
+			sleep(wait_sec);
+			cout << "OK...done!" << endl;
+		}
 
-
-	} catch(exception& e) {
+	} 
+	catch(exception& e) {
 		cerr << "Unhandled Exception reached the top of main: "
 		     << e.what() << ", application will now exit" << endl;
-		    return ERROR_UNHANDLED_EXCEPTION;
+		return ERROR_UNHANDLED_EXCEPTION;
+	} 
+	catch(...) {
 	}
+	
+	return 0;
 }
 
 

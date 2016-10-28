@@ -1,12 +1,25 @@
 TSIP (Trimble Standard Interface Protocol)
 ===================
 Intro
------
+--------
 This is a class implementation of the TSIP.
 
 This class will access a Trimple GPS unit, sending and receiving msgs
 based on the TSIP protocol.  The class is current support specialized
 calls to get the gps time in utc and to get the lat/long/elev.
+
+Install
+---------
+To install,
+* cd {yourpath}/gps
+* mkdir build
+* cd build
+* cmake ..
+* make
+* sudo make install
+
+two modules are installed - gps_test & gps_survey
+
 
 Usage
 ---------

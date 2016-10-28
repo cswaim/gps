@@ -105,7 +105,9 @@ tsip::tsip(std::string _port, bool verbose) {
 *	Close the gps file
 */
 tsip::~tsip() {
-	fclose(file);
+	if (file) {
+		fclose(file);
+	}
 }
 
 /** initilize command/report fields
