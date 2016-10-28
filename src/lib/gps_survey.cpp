@@ -112,7 +112,8 @@ void test_prt(int argc,char **argv) {
 }
 
 int main(int argc,char **argv) {
-
+	rc = 0;
+	
 	try {
 		int rtn = proc_args(argc,argv);
 		if (rtn > EXIT_SUCCESS) {
@@ -127,6 +128,11 @@ int main(int argc,char **argv) {
 		//instantiate gps class
 		cout << boost::format("gps is on port: %s") % gps_port<< endl;
 		tsip gps(gps_port);
+		
+		if (!gps.port_status) {
+			cout << "Unable to open port - terminating run" << endl;
+			throw 99;
+		}
 		
 		bool rc;
 		//set the survey count
@@ -147,17 +153,22 @@ int main(int argc,char **argv) {
 			sleep(wait_sec);
 			cout << "OK...done!" << endl;
 		}
-
+		
+		rc = 0;
 	} 
 	catch(exception& e) {
 		cerr << "Unhandled Exception reached the top of main: "
 		     << e.what() << ", application will now exit" << endl;
+		rc = ERROR_UNHANDLED_EXCEPTION;
 		return ERROR_UNHANDLED_EXCEPTION;
 	} 
+	catch (int n) {
+		rc = n;
+	}
 	catch(...) {
 	}
 	
-	return 0;
+	return rc;
 }
 
 

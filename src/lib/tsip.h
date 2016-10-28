@@ -442,6 +442,8 @@ struct _unknown {
 // Trimble Standard Interface Protocol (TSIP) class
 class tsip {
 	public:
+		bool port_status;
+	
 		struct xyz_t {
 			double latitude;			//decimal degrees
 			double longitude;			//decimal degrees

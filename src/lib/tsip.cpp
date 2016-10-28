@@ -105,7 +105,8 @@ tsip::tsip(std::string _port, bool verbose) {
 *	Close the gps file
 */
 tsip::~tsip() {
-	if (file) {
+	if (file != NULL) {
+		printf("closing serial port");
 		fclose(file);
 	}
 }
@@ -208,10 +209,12 @@ bool tsip::open_gps_port(std::string port)
 
 	if (file != NULL) {
 		setup_gps_port(file);
+		port_status = true;
 		return(true);
 	} else {
 		printf("Cannot open %s\n", gps_port.c_str());
 		perror(gps_port.c_str());
+		port_status = false;
         return (false);
 	}
     //if(!file) {

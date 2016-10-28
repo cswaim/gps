@@ -2,14 +2,22 @@
 #include <iostream>
 //#include "get_gps_time.h"
 void print_report();
-//std::string port = "/dev/ttyUSB0";
-std::string port = "/dev/ttyS5";
+std::string port = "/dev/ttyUSB0";
+//std::string port = "/dev/ttyS5";
 tsip::xyz_t xyz;
 time_t gps_time;
 tsip gps;
 
-int main()
+int main(int argc,char **argv)
 {
+	//check for port
+	if (argc > 1) {
+		std::cout << "  argc: " << argc << std::endl;
+		std::cout << "argv 0: " << argv[0] << std::endl;
+		std::cout << "argv 1: " << argv[1] << std::endl;
+		port = argv[1];
+	}
+	
 	//std::string port = "/dev/ttyUSB0";
     int year, month, day, hour, minute, second;
 
@@ -21,6 +29,7 @@ int main()
 
 	//tsip get time
     printf("---------getting time--TSIP-------\n");
+    std::cout << "opening port " << port << std::endl;
     gps.set_gps_port(port);
     bool rc = gps.open_gps_port();
     printf("open rc: %i \n",rc);

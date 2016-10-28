@@ -23,6 +23,7 @@ int wait_sec;
 int survey_cnt;
 tsip gps;
 std::string gps_port;     // "/dev/ttyUSB0"
+int rc;                   // program return code 
 
 int proc_args(int argc,char** argv, po::variables_map &vm);
 
