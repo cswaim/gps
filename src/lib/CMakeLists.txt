@@ -19,4 +19,9 @@ add_executable(gps_test gps_test.cpp tsip.cpp)
 add_executable(gps_survey gps_survey.cpp tsip.cpp)
 target_link_libraries(gps_survey ${Boost_LIBRARIES})
 
-
+########################################################################
+# Install built library files
+########################################################################
+install(TARGETS gps_test gps_survey
+		RUNTIME DESTINATION /usr/local/bin    
+		)	          
