@@ -939,24 +939,28 @@ bool tsip::set_survey_params(int survey_cnt) {
 	return rc;
 }
 
-/** set_auto save
+/** save_to_eeprom
 *
-*   set the auto save
+*   save all segments to eeprom
+*      default is to save all segments
+*      valid segments are 0x03-0x09 inclusive
 *
 *   @return bool rc
 */
-bool tsip::set_auto_save() {
+bool tsip::save_to_eeprom(int seg_num=0xff) {
 	bool rc;
 
 	//build 8E- request - set autosave
 	m_command.extended.code = COMMAND_SUPER_PACKET;
-	m_command.extended.subcode = REPORT_SUPER_UTC_GPS_TIME;
-	m_command.extended.data[0] = 0x3;
+	m_command.extended.subcode = COMMAND_SAVE_EEPROM ;
+	m_command.extended.data[0] = seg_num;
+	
 	m_command.extended.cmd_len = 4;
 
 	rc = send_request_msg(m_command);
 	return rc;
 }
+
 
 /** start self survey
 *
@@ -970,8 +974,8 @@ bool tsip::start_self_survey() {
 	//build 8E-A6 request - start self survey
 	m_command.extended.code = COMMAND_SUPER_PACKET;
 	m_command.extended.subcode = COMMAND_SELF_SURVEY;
-	m_command.extended.data[0] = 0x0;
-	m_command.extended.cmd_len = 4;
+	//m_command.extended.data[0] = 0x0;
+	m_command.extended.cmd_len = 3;
 
 	rc = send_request_msg(m_command);
 	return rc;

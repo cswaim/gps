@@ -135,15 +135,6 @@ union _command_packet {
 		UINT8 data[MAX_COMMAND-2];
 		UINT8 cmd_len;
 	} extended;
-	//struct _extended_8EA9 {
-		//UINT8 code;
-		//UINT8 subcode;
-		//UINT8 enable_survey;
-		//UINT8 save_position;
-		//UINT32 self_survey_length;
-		//UINT32 reserved_8Ea9;
-		//UINT8 cmd_len;
-	//} extended_8eA9;
 	struct _data_8ea9 {
 		UINT8 code;
 		UINT8 subcode;
@@ -506,7 +497,7 @@ class tsip {
 		void set_debug(bool);        	// set debug
 		void set_gps_port(std::string gps_port);
 		bool set_survey_params(int survey_cnt);
-		bool set_auto_save();
+		bool save_to_eeprom(int seg_num);
 		bool store_position();
 		bool start_self_survey();
 		bool open_gps_port(std::string port="");

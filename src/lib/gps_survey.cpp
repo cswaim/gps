@@ -139,10 +139,6 @@ int main(int argc,char **argv) {
 		cout << "setting survey_count to " << survey_cnt << endl;
 		rc = gps.set_survey_params(survey_cnt);
 		
-		//set auto save feature
-		cout << "setting autosave" << endl;
-		rc = gps.set_auto_save();
-		
 		//start self survey
 		cout << "starting self survey for " << survey_cnt << " position readings" << endl;
 		rc = gps.start_self_survey();
