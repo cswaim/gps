@@ -75,7 +75,7 @@ int proc_args(int argc,char**  argv) {
 	if (vm.count("survey-cnt")) {
 		survey_cnt = vm["survey-cnt"].as<int>();
 	} else {
-		survey_cnt = 200;
+		survey_cnt = 100;
 	}
 	cout << "survey_cnt set: " << survey_cnt << endl;
 
