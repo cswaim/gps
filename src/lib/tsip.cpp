@@ -929,9 +929,8 @@ bool tsip::set_survey_params(int survey_cnt) {
 	m_command.data_8ea9.save_position = 1;
 
 	//survey length
-	m_command.data_8ea9.reserved_8ea9 = 0;
 	m_command.data_8ea9.self_survey_length = survey_cnt;
-	//m_command.data_8ea9.data = data_8ea9;
+	m_command.data_8ea9.reserved_8ea9 = 0;
 	m_command.data_8ea9.cmd_len = 12;
 
 

@@ -142,6 +142,7 @@ union _command_packet {
 		UINT8 save_position;
 		UINT32 self_survey_length;
 		UINT32 reserved_8ea9;
+		UINT8 data[MAX_COMMAND-12];
 		UINT8 cmd_len;
 	} data_8ea9;
 };
