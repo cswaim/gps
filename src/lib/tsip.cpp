@@ -106,7 +106,7 @@ tsip::tsip(std::string _port, bool verbose) {
 */
 tsip::~tsip() {
 	if (file != NULL) {
-		printf("closing serial port");
+		printf("closing serial port\n");
 		fclose(file);
 	}
 }
