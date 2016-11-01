@@ -964,6 +964,10 @@ bool tsip::save_to_eeprom(int seg_num=0xff) {
 /** start self survey
 *
 *   start the self_survey
+*   data values
+*    0 - restart self-survey
+*    1 - save position to flash
+*    2 - delete position from flash
 *
 *   @return bool rc
 */
@@ -973,7 +977,7 @@ bool tsip::start_self_survey() {
 	//build 8E-A6 request - start self survey
 	m_command.extended.code = COMMAND_SUPER_PACKET;
 	m_command.extended.subcode = COMMAND_SELF_SURVEY;
-	m_command.extended.data[0] = 0xdd;
+	m_command.extended.data[0] = 1;
 	m_command.extended.cmd_len = 4;
 
 	rc = send_request_msg(m_command);
