@@ -923,10 +923,10 @@ bool tsip::set_survey_params(int survey_cnt) {
 	m_command.data_8ea9.subcode = COMMAND_SET_SELF_SURVEY_PARAMS;
 
 	//enable survey
-	m_command.data_8ea9.enable_survey = 0x1;
+	m_command.data_8ea9.enable_survey = 1;
 
 	//save position
-	m_command.data_8ea9.save_position = 0x0;
+	m_command.data_8ea9.save_position = 0;
 
 	//survey length
 	m_command.data_8ea9.self_survey_length = survey_cnt;
@@ -973,8 +973,8 @@ bool tsip::start_self_survey() {
 	//build 8E-A6 request - start self survey
 	m_command.extended.code = COMMAND_SUPER_PACKET;
 	m_command.extended.subcode = COMMAND_SELF_SURVEY;
-	m_command.extended.data[0] = 0x0;
-	m_command.extended.cmd_len = 3;
+	m_command.extended.data[0] = 0xdd;
+	m_command.extended.cmd_len = 4;
 
 	rc = send_request_msg(m_command);
 	return rc;
