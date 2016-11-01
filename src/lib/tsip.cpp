@@ -923,10 +923,10 @@ bool tsip::set_survey_params(int survey_cnt) {
 	m_command.data_8ea9.subcode = COMMAND_SET_SELF_SURVEY_PARAMS;
 
 	//enable survey
-	m_command.data_8ea9.enable_survey = 1;
+	m_command.data_8ea9.enable_survey = 0x1;
 
 	//save position
-	m_command.data_8ea9.save_position = 1;
+	m_command.data_8ea9.save_position = 0x0;
 
 	//survey length
 	m_command.data_8ea9.self_survey_length = survey_cnt;
