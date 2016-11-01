@@ -977,7 +977,7 @@ bool tsip::start_self_survey() {
 	//build 8E-A6 request - start self survey
 	m_command.extended.code = COMMAND_SUPER_PACKET;
 	m_command.extended.subcode = COMMAND_SELF_SURVEY;
-	m_command.extended.data[0] = 1;
+	m_command.extended.data[0] = 0;
 	m_command.extended.cmd_len = 4;
 
 	rc = send_request_msg(m_command);
