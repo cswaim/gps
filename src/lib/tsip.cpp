@@ -909,7 +909,93 @@ tsip::xyz_t tsip::get_xyz() {
 	return xyz;
 }
 
-/** set_survey_period
+
+/** revert_to_default 8E-45
+*
+* revert a segment to factory default
+* default is to revert all segments
+*  valid segments are 0x03-0x09 inclusive
+*     3 - receiver configuration
+*     4 - packet i/o
+*     5 - Serial port configuration
+*     6 - Timing output configuration
+*     7 - accurate position
+*     8 - self-survey configuration
+*     9 - disciplining configuration
+*  0xff - all segments
+*
+*   @return bool rc
+*/
+bool tsip::revert_to_default(int seg_num=0xff) {
+	bool rc;
+
+	//build 8E- request - set autosave
+	m_command.extended.code = COMMAND_SUPER_PACKET;
+	m_command.extended.subcode = COMMAND_REVERT_TO_DEFAULT;
+	m_command.extended.data[0] = seg_num;
+	
+	m_command.extended.cmd_len = 4;
+
+	rc = send_request_msg(m_command);
+	return rc;
+}
+
+
+/** save_to_eeprom  8E-4C
+*
+*   save all segments to eeprom
+*      default is to save all segments
+*      valid segments are 0x03-0x09 inclusive
+*       3 - receiver configuration
+*       4 - packet i/o
+*       5 - Serial port configuration
+*       6 - Timing output configuration
+*       7 - accurate position
+*       8 - self-survey configuration
+*       9 - disciplining configuration
+*    0xff - all segments
+*
+*   @return bool rc
+*/
+bool tsip::save_to_eeprom(int seg_num=0xff) {
+	bool rc;
+
+	//build 8E- request - set autosave
+	m_command.extended.code = COMMAND_SUPER_PACKET;
+	m_command.extended.subcode = COMMAND_SAVE_EEPROM ;
+	m_command.extended.data[0] = seg_num;
+	
+	m_command.extended.cmd_len = 4;
+
+	rc = send_request_msg(m_command);
+	return rc;
+}
+
+
+/** start self survey  8E-A6
+*
+*   start the self_survey
+*   data values
+*    0 - restart self-survey
+*    1 - save position to flash
+*    2 - delete position from flash
+*
+*   @return bool rc
+*/
+bool tsip::start_self_survey() {
+	bool rc;
+
+	//build 8E-A6 request - start self survey
+	m_command.extended.code = COMMAND_SUPER_PACKET;
+	m_command.extended.subcode = COMMAND_SELF_SURVEY;
+	m_command.extended.data[0] = 0;
+	m_command.extended.cmd_len = 4;
+
+	rc = send_request_msg(m_command);
+	return rc;
+}
+
+/** set_survey_period  8E-A9
 *
 *   updates the survey count.  Default is 2000.
 *
@@ -933,52 +1019,6 @@ bool tsip::set_survey_params(int survey_cnt) {
 	m_command.data_8ea9.reserved_8ea9 = 0;
 	m_command.data_8ea9.cmd_len = 12;
 
-
-	rc = send_request_msg(m_command);
-	return rc;
-}
-
-/** save_to_eeprom
-*
-*   save all segments to eeprom
-*      default is to save all segments
-*      valid segments are 0x03-0x09 inclusive
-*
-*   @return bool rc
-*/
-bool tsip::save_to_eeprom(int seg_num=0xff) {
-	bool rc;
-
-	//build 8E- request - set autosave
-	m_command.extended.code = COMMAND_SUPER_PACKET;
-	m_command.extended.subcode = COMMAND_SAVE_EEPROM ;
-	m_command.extended.data[0] = seg_num;
-	
-	m_command.extended.cmd_len = 4;
-
-	rc = send_request_msg(m_command);
-	return rc;
-}
-
-
-/** start self survey
-*
-*   start the self_survey
-*   data values
-*    0 - restart self-survey
-*    1 - save position to flash
-*    2 - delete position from flash
-*
-*   @return bool rc
-*/
-bool tsip::start_self_survey() {
-	bool rc;
-
-	//build 8E-A6 request - start self survey
-	m_command.extended.code = COMMAND_SUPER_PACKET;
-	m_command.extended.subcode = COMMAND_SELF_SURVEY;
-	m_command.extended.data[0] = 0;
-	m_command.extended.cmd_len = 4;
 
 	rc = send_request_msg(m_command);
 	return rc;

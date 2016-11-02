@@ -103,6 +103,7 @@ const UINT8 REPORT_SUPER_PRIMARY_TIME		= 0xab;
 const UINT8 REPORT_SUPER_SECONDARY_TIME		= 0xac;
 
 //supported super-command subcommands
+const UINT8 COMMAND_REVERT_TO_DEFAULT       = 0x45;
 const UINT8 COMMAND_SAVE_EEPROM             = 0x4c;
 const UINT8 COMMAND_SELF_SURVEY             = 0xa6;
 const UINT8 COMMAND_SET_SELF_SURVEY_PARAMS  = 0xa9;
@@ -498,6 +499,7 @@ class tsip {
 		void set_debug(bool);        	// set debug
 		void set_gps_port(std::string gps_port);
 		bool set_survey_params(int survey_cnt);
+		bool revert_to_default(int seg_num);
 		bool save_to_eeprom(int seg_num);
 		bool store_position();
 		bool start_self_survey();
