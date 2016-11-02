@@ -61,7 +61,7 @@ int main(int argc,char **argv)
     std::cout << "self survey params rc: " << rc << std::endl;
     //clear position & start self-survey
     rc = gps.revert_to_default(7);
-    std::cout << "self survey rc: " << rc << std::endl;
+    std::cout << "revert to default rc: " << rc << std::endl;
 	//start self survey
     rc = gps.start_self_survey();
     std::cout << "self survey rc: " << rc << std::endl;

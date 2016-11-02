@@ -934,7 +934,7 @@ bool tsip::revert_to_default(int seg_num=0xff) {
 	m_command.extended.subcode = COMMAND_REVERT_TO_DEFAULT;
 	m_command.extended.data[0] = seg_num;
 	
-	m_command.extended.cmd_len = 4;
+	m_command.extended.cmd_len = 3;
 
 	rc = send_request_msg(m_command);
 	return rc;
@@ -989,7 +989,7 @@ bool tsip::start_self_survey() {
 	m_command.extended.code = COMMAND_SUPER_PACKET;
 	m_command.extended.subcode = COMMAND_SELF_SURVEY;
 	m_command.extended.data[0] = 0;
-	m_command.extended.cmd_len = 4;
+	m_command.extended.cmd_len = 3;
 
 	rc = send_request_msg(m_command);
 	return rc;
