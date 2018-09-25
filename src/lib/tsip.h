@@ -89,6 +89,7 @@ typedef float SINGLE;
 typedef double DOUBLE;
 
 // supported reports and super-reports
+
 const UINT8 REPORT_ECEF_POSITION_S			= 0x42;
 const UINT8 REPORT_ECEF_VELOCITY			= 0x43;
 const UINT8 REPORT_SW_VERSION				= 0x45;
@@ -97,24 +98,27 @@ const UINT8 REPORT_IO_OPTIONS				= 0x55;
 const UINT8 REPORT_ENU_VELOCITY				= 0x56;
 const UINT8 REPORT_ECEF_POSITION_D			= 0x83;
 const UINT8 REPORT_DOUBLE_POSITION			= 0x84;
+
 const UINT8 REPORT_SUPER					= 0x8f;
 const UINT8 REPORT_SUPER_UTC_GPS_TIME		= 0xa2;
 const UINT8 REPORT_SUPER_PRIMARY_TIME		= 0xab;
 const UINT8 REPORT_SUPER_SECONDARY_TIME		= 0xac;
 
-//supported super-command subcommands
-const UINT8 COMMAND_REVERT_TO_DEFAULT       = 0x45;
-const UINT8 COMMAND_SAVE_EEPROM             = 0x4c;
-const UINT8 COMMAND_SELF_SURVEY             = 0xa6;
-const UINT8 COMMAND_SET_SELF_SURVEY_PARAMS  = 0xa9;
-
-// supported commands and super-commands
+//supported commands
 const UINT8 COMMAND_COLD_FACTORY_RESET		= 0x1e;
 const UINT8 COMMAND_REQUEST_SW_VERSION		= 0x1f;
 const UINT8 COMMAND_WARM_RESET_SELF_TEST	= 0x25;
 const UINT8 COMMAND_SET_IO_OPTIONS			= 0x35;
 const UINT8 COMMAND_REQUEST_POSITION		= 0x37;
-const UINT8 COMMAND_SUPER_PACKET			= 0x8E;
+
+// supported super-commands and subcommands
+const UINT8 COMMAND_SUPER_PACKET			= 0x8e;
+const UINT8 COMMAND_MANUFACTURING_PARAMS	= 0x41;
+const UINT8 COMMAND_REVERT_TO_DEFAULT       = 0x45;
+const UINT8 COMMAND_SAVE_EEPROM             = 0x4c;
+const UINT8 COMMAND_SELF_SURVEY             = 0xa6;
+const UINT8 COMMAND_SET_SELF_SURVEY_PARAMS  = 0xa9;
+
 
 /****************************
  * Request packet structures *
@@ -436,7 +440,7 @@ struct _unknown {
 class tsip {
 	public:
 		bool port_status;
-	
+
 		struct xyz_t {
 			double latitude;			//decimal degrees
 			double longitude;			//decimal degrees
