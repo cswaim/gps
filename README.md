@@ -5,7 +5,7 @@ Intro
 This is a class implementation of the TSIP.
 
 This class will access a Trimple GPS unit, sending and receiving msgs
-based on the TSIP protocol.  The class is current support specialized
+based on the TSIP protocol.  The class currently supports specialized
 calls to get the gps time in utc and to get the lat/long/elev.
 
 Install
